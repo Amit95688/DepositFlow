@@ -6,4 +6,5 @@ sqlalchemy
 pytest
 matplotlib
 scikit-learn
+torch
 -e .
