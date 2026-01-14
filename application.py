@@ -6,8 +6,8 @@ import sys
 
 from sklearn.preprocessing import LabelEncoder
 
-app = Flask(__name__)
-
+application = Flask(__name__)
+app=application
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
 from src.pipeline.predict_pipeline import PredictPipeline
