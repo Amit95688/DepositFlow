@@ -7,10 +7,14 @@ import sys
 from sklearn.preprocessing import LabelEncoder
 
 application = Flask(__name__)
-app=application
+app = application
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
-from src.pipeline.predict_pipeline import PredictPipeline
+try:
+    from src.pipeline.predict_pipeline import PredictPipeline
+except Exception as e:
+    print(f"Warning: Could not import PredictPipeline: {e}")
 
 @app.route('/')
 def home():
@@ -30,4 +34,4 @@ def predict():
             return render_template('index.html', error=str(e))
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=False)
