@@ -8,6 +8,7 @@ on:
 permissions:
   id-token: write
   contents: read
+
 jobs:
   integration:
     name: Continuous Integration
@@ -15,11 +16,13 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      
       - name: Lint code
         run: echo "Linting repository"
+      
       - name: Run unit tests
         run: echo "Running unit tests"
-  
+
   build-and-push-ecr-image:
     name: Continuous Delivery
     needs: integration
@@ -27,6 +30,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      
+      - name: Install Utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -38,6 +46,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: true
       
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -46,13 +56,15 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
+          # Build a docker container and push it to ECR
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          
+
   Continuous-Deployment:
+    name: Continuous Deployment
     needs: build-and-push-ecr-image
-    runs-on: self-hosted  # Changed from ubuntu-latest
+    runs-on: self-hosted  # CRITICAL: Changed from ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -67,15 +79,17 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: true
       
-      - name: Stop and remove existing container
-        run: |
-          docker ps -q --filter "name=mlops" | grep -q . && docker stop mlops && docker rm -fv mlops || true
-       
       - name: Pull latest images
         run: |
           docker pull ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-         
+      
+      - name: Stop and remove container if running
+        run: |
+          docker ps -q --filter "name=mlops" | grep -q . && docker stop mlops && docker rm -fv mlops || true
+       
       - name: Run Docker Image to serve users
         run: |
           docker run -d -p 5000:5000 --ipc="host" --name=mlops \
@@ -84,6 +98,11 @@ jobs:
             -e AWS_REGION=${{ secrets.AWS_REGION }} \
             ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
       
-      - name: Clean up old images
+      - name: Clean previous images and containers
         run: |
           docker system prune -f
+      
+      - name: Clean up disk space
+        run: |
+          docker system prune -a --volumes -f
+          sudo rm -rf /home/ubuntu/actions-runner/_diag/* || true
