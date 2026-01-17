@@ -124,7 +124,7 @@ graph LR
 Build a machine learning model to predict whether a bank customer will subscribe to a term deposit based on their demographics, banking history, and campaign interaction data.
 
 ### Dataset
-- **Source**: [Kaggle Playground Series - Season 4, Episode 2](https://www.kaggle.com/competitions/playground-series-s4e2)
+- **Source**: [Kaggle Playground Series - Season 5, Episode 8](https://www.kaggle.com/competitions/playground-series-s5e8)
 - **Type**: Synthetically generated data (similar to UCI Bank Marketing dataset)
 - **Training Samples**: 45,211 records
 - **Features**: 16 features (numerical + categorical)
