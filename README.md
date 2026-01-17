@@ -218,6 +218,23 @@ docker run -d \
   ml-ops-api:latest
 ```
 
+### Docker Compose (MLflow + Airflow)
+
+```bash
+# Start MLflow UI and Airflow (API server + scheduler)
+docker compose up -d mlflow airflow
+
+# Stop everything
+docker compose down
+```
+
+- MLflow UI: http://localhost:5000
+- Airflow UI: http://localhost:8080 (local dev auth is disabled; admin/admin also works)
+- DAGs mount the local `dags/` folder; MLflow artifacts persist in the `mlflow-artifacts` volume.
+
+Airflow orchestration view (sample):
+![Airflow DAG](screenshot/Airflow.png)
+
 ### Push to AWS ECR
 
 ```bash

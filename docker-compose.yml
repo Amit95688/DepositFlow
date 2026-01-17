@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  mlflow:
+    image: ml-ops-api:latest
+    container_name: mlops-mlflow
+    command: >-
+      mlflow server --backend-store-uri sqlite:////app/mlflow.db \
+      --default-artifact-root /app/mlruns --host 0.0.0.0 --port 5000
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_REGISTRY_URI=http://mlflow:5000
+    volumes:
+      - ./:/app
+      - mlflow-artifacts:/app/mlruns
+      - artifacts:/app/artifacts
+    ports:
+      - "5000:5000"
+
+  airflow:
+    image: ml-ops-api:latest
+    container_name: mlops-airflow
+    command: ["python", "scripts/start_airflow.py"]
+    environment:
+      - AIRFLOW_HOME=/app/airflow
+      - AIRFLOW__CORE__DAGS_FOLDER=/app/dags
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////app/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - PYTHONPATH=/app
+    volumes:
+      - ./:/app
+      - airflow-logs:/app/airflow/logs
+      - artifacts:/app/artifacts
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mlflow
+
+volumes:
+  mlflow-artifacts:
+  airflow-logs:
+  artifacts:
+
+
+
