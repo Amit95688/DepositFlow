@@ -102,7 +102,32 @@ graph LR
 
 ---
 
-## 🚀 Quick Start
+## � Problem Statement
+
+### Objective
+Build a machine learning model to predict whether a bank customer will subscribe to a term deposit based on their demographics, banking history, and campaign interaction data.
+
+### Dataset
+- **Source**: [Kaggle Playground Series - Season 4, Episode 2](https://www.kaggle.com/competitions/playground-series-s4e2)
+- **Type**: Synthetically generated data (similar to UCI Bank Marketing dataset)
+- **Training Samples**: 45,211 records
+- **Features**: 16 features (numerical + categorical)
+- **Target**: Binary classification (subscription: yes/no)
+
+### Business Context
+The bank aims to optimize its marketing campaign efficiency by identifying customers most likely to subscribe to term deposits. This reduces marketing costs and improves campaign ROI by targeting high-probability prospects.
+
+### Success Metrics
+- **Primary**: ROC-AUC Score ≥ 0.95
+- **Secondary**: F1-Score ≥ 0.90
+- **Tertiary**: Model latency < 100ms for API inference
+
+### Task
+**Binary Classification**: Predict subscription probability for each customer with probability estimates for threshold tuning.
+
+---
+
+## �🚀 Quick Start
 
 ### Prerequisites
 
