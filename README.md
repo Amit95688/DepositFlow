@@ -1,4 +1,21 @@
 # 🚀 MLOps Production Pipeline
+---
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.14-blue?style=for-the-badge&logo=python)
+![MLflow](https://img.shields.io/badge/MLflow-3.8.1-0194E2?style=for-the-badge&logo=mlflow)
+![Airflow](https://img.shields.io/badge/Airflow-3.0.6-017CEE?style=for-the-badge&logo=apache-airflow)
+![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker)
+![AWS](https://img.shields.io/badge/AWS-EC2_|_ECR-FF9900?style=for-the-badge&logo=amazon-aws)
+![DVC](https://img.shields.io/badge/DVC-Enabled-13ADC7?style=for-the-badge&logo=dvc)
+
+**Enterprise-grade ML pipeline with automated training, deployment, and monitoring**
+
+[Features](#-features) • [Architecture](#-architecture) • [Performance](#-model-performance) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
+
+</div>
+
+---
 ## � Problem Statement
 
 ### Objective
@@ -22,23 +39,7 @@ The bank aims to optimize its marketing campaign efficiency by identifying custo
 ### Task
 **Binary Classification**: Predict subscription probability for each customer with probability estimates for threshold tuning.
 
----
-<div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.14-blue?style=for-the-badge&logo=python)
-![MLflow](https://img.shields.io/badge/MLflow-3.8.1-0194E2?style=for-the-badge&logo=mlflow)
-![Airflow](https://img.shields.io/badge/Airflow-3.0.6-017CEE?style=for-the-badge&logo=apache-airflow)
-![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker)
-![AWS](https://img.shields.io/badge/AWS-EC2_|_ECR-FF9900?style=for-the-badge&logo=amazon-aws)
-![DVC](https://img.shields.io/badge/DVC-Enabled-13ADC7?style=for-the-badge&logo=dvc)
-
-**Enterprise-grade ML pipeline with automated training, deployment, and monitoring**
-
-[Features](#-features) • [Architecture](#-architecture) • [Performance](#-model-performance) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
-
-</div>
-
----
 
 ## 📊 Model Performance
 
