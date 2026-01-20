@@ -1,19 +1,15 @@
 """
-Airflow DAG for ML Pipeline with PyTorch and Hyperparameter Tuning + CI/CD
+Airflow DAG for ML Pipeline: Data Ingestion → Transformation → Model Training (PyTorch) + DVC Integration
 """
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 import os
 import sys
 
-# Add project to path
+# Add project root to PYTHONPATH
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
-
-from src.pipeline.train_pipeline import run_training_pipeline
-from src.logger.logger import logging
 
 # Default arguments
 default_args = {
@@ -24,95 +20,58 @@ default_args = {
     'email_on_failure': False,
 }
 
-# Define DAG
+# DAG definition
 dag = DAG(
-    'ml_training_pipeline_pytorch',
+    'ml_pipeline_dvc_pytorch',
     default_args=default_args,
-    description='Full CI/CD + ML Pipeline with PyTorch, Hyperparameter Tuning, and MLflow',
-    schedule='@weekly',  # Run weekly
+    description='DVC-based ML Pipeline: Ingestion → Transformation → Model Training (PyTorch + HPO)',
+    schedule='@weekly',
     catchup=False,
-    tags=['ml', 'pytorch', 'mlflow', 'cicd']
+    tags=['ml', 'pytorch', 'dvc', 'pipeline']
 )
 
+# Base path for logs and project
+PROJECT_ROOT = "/app"
+LOGS_DIR = os.path.join(PROJECT_ROOT, "logs")
+os.makedirs(LOGS_DIR, exist_ok=True)
 
-def run_training_task(**context):
-    """Run the training pipeline"""
-    logging.info("Starting training pipeline task...")
-    try:
-        run_training_pipeline(
-            use_hyperparameter_tuning=True,
-            tuning_method='optuna',
-            cv_folds=3,
-            n_iter=5
-        )
-        logging.info("Training pipeline completed successfully")
-        return {'status': 'success'}
-    except Exception as e:
-        logging.error(f"Training pipeline failed: {str(e)}")
-        raise
-
-
-def data_quality_check(**context):
-    """Validate data quality"""
-    logging.info("Running data quality checks...")
-    logging.info("✓ Data quality checks passed")
-    return {'status': 'passed'}
-
-
-def notify_completion(**context):
-    """Notify on pipeline completion"""
-    task_instance = context['task_instance']
-    logging.info("="*60)
-    logging.info("✓ FULL CI/CD + ML PIPELINE COMPLETED")
-    logging.info("="*60)
-    logging.info("Pipeline stages executed:")
-    logging.info("  1. Code Lint")
-    logging.info("  2. Unit Tests")
-    logging.info("  3. Docker Build")
-    logging.info("  4. Data Quality Check")
-    logging.info("  5. Model Training (PyTorch + HPO)")
-    logging.info("="*60)
-    logging.info("View MLflow results at: http://localhost:5000")
-    logging.info("="*60)
-
-
-# CI/CD Tasks
-lint_task = BashOperator(
-    task_id='01_lint_code',
-    bash_command='cd /app && python -m pylint src/ --exit-zero 2>&1 | head -20 || true',
-    dag=dag
+# -------------------------------
+# Stage 1: Data Ingestion
+# -------------------------------
+data_ingestion_task = BashOperator(
+    task_id="data_ingestion",
+    bash_command=f"cd {PROJECT_ROOT} && dvc repro -s data_ingestion >> {LOGS_DIR}/data_ingestion.log 2>&1",
+    dag=dag,
 )
 
-test_task = BashOperator(
-    task_id='02_run_tests',
-    bash_command='cd /app && python -m pytest src/tests/unit/ -v 2>&1 | head -30 || echo "Tests skipped"',
-    dag=dag
+# -------------------------------
+# Stage 2: Data Transformation
+# -------------------------------
+data_transformation_task = BashOperator(
+    task_id="data_transformation",
+    bash_command=f"cd {PROJECT_ROOT} && dvc repro -s data_transformation >> {LOGS_DIR}/data_transformation.log 2>&1",
+    dag=dag,
 )
 
-build_task = BashOperator(
-    task_id='03_build_docker_image',
-    bash_command='echo "✓ Docker image already cached as ml-ops-api:latest (8.49GB)" && ls -lh /app/Dockerfile',
-    dag=dag
+# -------------------------------
+# Stage 3: Model Training
+# -------------------------------
+model_training_task = BashOperator(
+    task_id="model_trainer",
+    bash_command=f"cd {PROJECT_ROOT} && dvc repro -s model_trainer >> {LOGS_DIR}/model_trainer.log 2>&1",
+    dag=dag,
 )
 
-# ML Pipeline Tasks
-data_check = PythonOperator(
-    task_id='04_data_quality_check',
-    python_callable=data_quality_check,
-    dag=dag
+# -------------------------------
+# Stage 4: Push Artifacts to DVC Remote (Optional)
+# -------------------------------
+push_artifacts_task = BashOperator(
+    task_id="push_artifacts",
+    bash_command=f"cd {PROJECT_ROOT} && dvc push >> {LOGS_DIR}/dvc_push.log 2>&1",
+    dag=dag,
 )
 
-training_task = PythonOperator(
-    task_id='05_train_pytorch_model',
-    python_callable=run_training_task,
-    dag=dag
-)
-
-completion_notify = PythonOperator(
-    task_id='06_notify_completion',
-    python_callable=notify_completion,
-    dag=dag
-)
-
-# Set dependencies: Full CI/CD -> ML Pipeline
-lint_task >> test_task >> build_task >> data_check >> training_task >> completion_notify
+# -------------------------------
+# Set execution order
+# -------------------------------
+data_ingestion_task >> data_transformation_task >> model_training_task >> push_artifacts_task
